@@ -11,13 +11,13 @@ router.post('/register', async (req, res) => {
    const error = validateRegisterUser(doc);
 
    if (error) {
-      return res.status(400).json({ msg: "fill all the details!" });
+      return res.status(400).json({ message: "fill all the details!" });
    }
 
    const user = await User.findOne({ email: doc.email });
 
    if (user) {
-      return res.status(400).json({ msg: "Email already exists!" });
+      return res.status(400).json({ message: "Email already exists!" });
    }
 
    else {
@@ -31,7 +31,7 @@ router.post('/register', async (req, res) => {
       });
 
       await newUser.save();
-      res.status(201).json({ msg: "user created!" });
+      res.status(201).json({ message: "user created!" });
    }
 
 });
@@ -50,13 +50,13 @@ router.post('/login', async (req, res) => {
    });
 
    if (!user) {
-      return res.status(400).json({ msg: "User does not exist!" });
+      return res.status(400).json({ message: "User does not exist!" });
    }
 
    const isMatch = await bcrypt.compare(doc.password, user.hash);
 
    if (!isMatch) {
-      return res.status(400).json({ msg: "Invalid credentials!" });
+      return res.status(400).json({ message: "Invalid credentials!" });
    }
 
    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: 300 });

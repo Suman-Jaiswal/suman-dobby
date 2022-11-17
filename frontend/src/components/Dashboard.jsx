@@ -72,6 +72,8 @@ export default function Dashboard({ user, setIsAuthenticated, isAuthenticated })
             setLoading(false);
             setShow(false);
             setImages([...images, res.data]);
+            setImage(null);
+            setTitle('');
          })
    };
 

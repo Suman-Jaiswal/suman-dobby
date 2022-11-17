@@ -24,12 +24,14 @@ export default function Auth({ setUser, setIsAuthenticated }) {
             setLoading(false);
             localStorage.setItem('token', res.data.access_token);
             localStorage.setItem('user', JSON.stringify(res.data.user));
+
             setUser(res.data.user);
             setIsAuthenticated(true);
+
          })
          .catch(err => {
             setLoading(false);
-            setErr(err.message);
+            setErr(err.response.data.message);
          })
    }
 
@@ -53,7 +55,7 @@ export default function Auth({ setUser, setIsAuthenticated }) {
          })
          .catch(err => {
             setLoading(false);
-            setErr(err.message);
+            setErr(err.response.data.message);
          })
    }
 
