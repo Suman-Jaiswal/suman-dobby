@@ -10,14 +10,28 @@ function App() {
 
    useEffect(() => {
       const token = localStorage.getItem('token');
+
       if (token) {
+         const jwtPayload = JSON.parse(window.atob(token && token.split('.')[1]))
+
+         if (!jwtPayload || Date.now() / 1000 > jwtPayload.exp) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            setIsAuthenticated(false);
+            navigate('/auth');
+            alert('Session expired! Please login again.');
+            return
+         }
          setIsAuthenticated(true);
+      }
+      else {
+         setIsAuthenticated(false);
       }
 
       if (isAuthenticated) {
          const user = JSON.parse(localStorage.getItem('user'));
          setUser(user);
-         navigate('/dashboard');
+         navigate('/');
       }
       else {
          navigate('/auth');
@@ -28,7 +42,7 @@ function App() {
    return (
       <>
          <Routes>
-            <Route path='/dashboard' element={<Dashboard user={user} setIsAuthenticated={setIsAuthenticated} isAuthenticated={isAuthenticated} />} />
+            <Route path='/' element={<Dashboard user={user} setIsAuthenticated={setIsAuthenticated} isAuthenticated={isAuthenticated} />} />
             <Route path='/auth' element={<Auth setUser={setUser} setIsAuthenticated={setIsAuthenticated} />} />
          </Routes>
       </>

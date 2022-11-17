@@ -10,6 +10,7 @@ export default function Auth({ setUser, setIsAuthenticated }) {
    const [email, setEmail] = React.useState('');
    const [password, setPassword] = React.useState('');
    const [confirmPassword, setConfirmPassword] = React.useState('');
+   const [err, setErr] = React.useState('');
 
    const handleLogin = (e) => {
       e.preventDefault();
@@ -21,11 +22,14 @@ export default function Auth({ setUser, setIsAuthenticated }) {
       }, {})
          .then(res => {
             setLoading(false);
-            console.log(res);
             localStorage.setItem('token', res.data.access_token);
             localStorage.setItem('user', JSON.stringify(res.data.user));
             setUser(res.data.user);
             setIsAuthenticated(true);
+         })
+         .catch(err => {
+            setLoading(false);
+            setErr(err.message);
          })
    }
 
@@ -47,11 +51,14 @@ export default function Auth({ setUser, setIsAuthenticated }) {
             console.log(res);
             setIsLoginPage(true);
          })
+         .catch(err => {
+            setLoading(false);
+            setErr(err.message);
+         })
    }
 
    useEffect(() => {
       setLoading(false);
-
       setConfirmPassword('');
       setEmail('');
       setName('');
@@ -62,7 +69,7 @@ export default function Auth({ setUser, setIsAuthenticated }) {
    return (
       <>
          {
-            Loading ? <div className='h4 mt-5 text-center'>Loading...</div> :
+            Loading ? <div className='h4 mt-5 text-center'>Loading...</div> : err !== '' ? <div className='h4 mt-5 text-danger text-center'>{err}</div> :
                <div className="container mt-5">
                   <div className="row justify-content-center">
                      <div className="col-md-6">

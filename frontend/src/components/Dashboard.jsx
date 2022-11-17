@@ -3,7 +3,6 @@ import { Navbar, Nav, NavDropdown, Form, Button, Container, Modal } from 'react-
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import FileBase64 from 'react-file-base64';
-import Demo from './ImageViewer';
 
 export default function Dashboard({ user, setIsAuthenticated, isAuthenticated }) {
 
@@ -16,6 +15,8 @@ export default function Dashboard({ user, setIsAuthenticated, isAuthenticated })
    const [loading, setLoading] = React.useState(true);
    const [search, setSearch] = React.useState('');
    const [showModal, setShowModal] = React.useState(false);
+   const [modalImg, setModalImg] = React.useState(null);
+   const [err, setErr] = React.useState('');
 
    const handleLogout = () => {
       localStorage.removeItem('token');
@@ -36,6 +37,7 @@ export default function Dashboard({ user, setIsAuthenticated, isAuthenticated })
    useEffect(() => {
       if (!isAuthenticated) {
          navigate('/auth');
+         return
       }
 
       setLoading(true);
@@ -43,6 +45,10 @@ export default function Dashboard({ user, setIsAuthenticated, isAuthenticated })
          .then(res => {
             setLoading(false);
             setImages(res.data);
+         })
+         .catch(err => {
+            setLoading(false);
+            setErr(err.msg);
          })
 
    }, [isAuthenticated, navigate]);
@@ -71,20 +77,24 @@ export default function Dashboard({ user, setIsAuthenticated, isAuthenticated })
 
    useEffect(() => {
       setFilteredImages(images.filter(image => image.title.toLowerCase().includes(search.toLowerCase())));
-      console.log('s');
    }, [images, search]);
+
 
    return (
       <div className="Dashboard">
          {
-            user &&
+            isAuthenticated &&
             <>
                {
                   loading ? <div className='h4 mt-5 text-center'>Loading...</div> :
                      <>
                         <Navbar variant='dark' bg='dark' className='py-3' expand="lg">
                            <Container fluid>
-                              <Navbar.Brand className='fw-bold' >Cloud Gallery</Navbar.Brand>
+                              <div className='d-flex align-items-center'>
+                                 <Navbar.Brand className='fw-bold' >Cloud Gallery</Navbar.Brand>
+                                 <Button className='ms-4' onClick={() => setShow(true)} >Upload</Button>
+                              </div>
+
                               <Navbar.Toggle aria-controls="navbarScroll" />
                               <Navbar.Collapse id="navbarScroll">
                                  <Nav
@@ -102,42 +112,60 @@ export default function Dashboard({ user, setIsAuthenticated, isAuthenticated })
                                        onChange={(e) => setSearch(e.target.value)}
                                     />
                                  </Form>
-                                 <Button className='ms-4' onClick={() => setShow(true)} >Upload</Button>
-                                 <Nav>
-                                    <NavDropdown drop='start' className='text-light ms-4 me-3' title={getInitials(user.name)} id="navbarScrollingDropdown"
-                                       style={{
-                                          fontSize: '1rem',
-                                          fontWeight: 'bold',
-                                       }}>
+
+                                 <Nav> {
+                                    window.width > 992 ?
+                                       <NavDropdown drop='start' className='text-light ms-4 me-3' title={getInitials(user.name)} id="navbarScrollingDropdown"
+                                          style={{
+                                             fontSize: '1rem',
+                                             fontWeight: 'bold',
+                                          }}>
+                                          <div className="box p-3">
+                                             <div className="fw-bold ">{user.name}</div>
+                                             <div className="text-secondary ">{user.email}</div>
+                                          </div>
+                                          <NavDropdown.Divider />
+                                          <NavDropdown.Item className='text-danger' onClick={handleLogout}>
+                                             Logout
+                                          </NavDropdown.Item>
+                                       </NavDropdown>
+                                       :
                                        <div className="box p-3">
                                           <div className="fw-bold ">{user.name}</div>
                                           <div className="text-secondary ">{user.email}</div>
+                                          <br />
+                                          <NavDropdown.Item className='text-danger' onClick={handleLogout}>
+                                             Logout
+                                          </NavDropdown.Item>
                                        </div>
-                                       <NavDropdown.Divider />
-                                       <NavDropdown.Item className='text-danger' onClick={handleLogout}>
-                                          Logout
-                                       </NavDropdown.Item>
-                                    </NavDropdown>
+
+                                 }
+
+
+
                                  </Nav>
 
                               </Navbar.Collapse>
                            </Container>
                         </Navbar>
 
-                        <div className="container-fluid m-3">
-                           <div className="row">
+                        <div className="container-fluid m-md-3">
+                           <div className="row p-0">
                               {
                                  filteredImages.length > 0 ? filteredImages.map((image, index) => (
-                                    <div className="col-2" key={index}>
-                                       <div className="card" role={'button'} onClick={() => setShowModal(true)}>
-                                          <Demo img={image} showModal={showModal} setShowModal={setShowModal} />
+                                    <div className="col-6 col-md-2 p-1" key={index}>
+                                       <div className="card" role={'button'} onClick={() => {
+                                          setShowModal(true);
+                                          setModalImg(image);
+                                       }}>
                                           <div className="card-body">
                                              <img src={image.buffer} className='card-image' alt="" style={{ width: "100%", borderBottom: "1px solid grey" }} />
                                              <h5 className="card-title text-center mt-3">{image.title}</h5>
                                           </div>
                                        </div>
                                     </div>
-                                 )) : <div className="text-center mt-5 h5">No images!</div>
+                                 )) : err === '' ? <div className="text-center mt-5 h5">No images!</div> :
+                                    <div className="text-center text-danger mt-5 h5">{err}</div>
                               }
 
                            </div>
@@ -160,7 +188,14 @@ export default function Dashboard({ user, setIsAuthenticated, isAuthenticated })
                               </Form>
                            </Modal.Body>
                         </Modal>
-
+                        <Modal size="xl" show={showModal} onHide={() => setShowModal(false)} >
+                           <Modal.Header closeButton>{modalImg && modalImg.title}</Modal.Header>
+                           <Modal.Body>
+                              <img src={modalImg && modalImg.buffer} alt="" style={{
+                                 width: '100%',
+                              }} />
+                           </Modal.Body>
+                        </Modal>
                      </>
 
                }
