@@ -41,7 +41,7 @@ export default function Dashboard({ user, setIsAuthenticated, isAuthenticated })
       }
 
       setLoading(true);
-      axios.get('http://localhost:5000/images', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+      axios.get(process.env.REACT_APP_baseURL + '/images', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
          .then(res => {
             setLoading(false);
             setImages(res.data);
@@ -67,7 +67,7 @@ export default function Dashboard({ user, setIsAuthenticated, isAuthenticated })
          buffer: image
       }
 
-      axios.post('http://localhost:5000/images', doc, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+      axios.post(process.env.REACT_APP_baseURL + '/images', doc, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
          .then(res => {
             setLoading(false);
             setShow(false);
@@ -113,35 +113,30 @@ export default function Dashboard({ user, setIsAuthenticated, isAuthenticated })
                                     />
                                  </Form>
 
-                                 <Nav> {
-                                    window.width > 992 ?
-                                       <NavDropdown drop='start' className='text-light ms-4 me-3' title={getInitials(user.name)} id="navbarScrollingDropdown"
-                                          style={{
-                                             fontSize: '1rem',
-                                             fontWeight: 'bold',
-                                          }}>
-                                          <div className="box p-3">
-                                             <div className="fw-bold ">{user.name}</div>
-                                             <div className="text-secondary ">{user.email}</div>
-                                          </div>
-                                          <NavDropdown.Divider />
-                                          <NavDropdown.Item className='text-danger' onClick={handleLogout}>
-                                             Logout
-                                          </NavDropdown.Item>
-                                       </NavDropdown>
-                                       :
+                                 <Nav>
+                                    <NavDropdown drop='start' className='text-light ms-4 me-3 desktop' title={getInitials(user.name)} id="navbarScrollingDropdown"
+                                       style={{
+                                          fontSize: '1rem',
+                                          fontWeight: 'bold',
+                                       }}>
                                        <div className="box p-3">
                                           <div className="fw-bold ">{user.name}</div>
                                           <div className="text-secondary ">{user.email}</div>
-                                          <br />
-                                          <NavDropdown.Item className='text-danger' onClick={handleLogout}>
-                                             Logout
-                                          </NavDropdown.Item>
                                        </div>
+                                       <NavDropdown.Divider />
+                                       <NavDropdown.Item className='text-danger' onClick={handleLogout}>
+                                          Logout
+                                       </NavDropdown.Item>
+                                    </NavDropdown>
 
-                                 }
-
-
+                                    <div className="box p-3 mobile">
+                                       <div className="fw-bold ">{user.name}</div>
+                                       <div className="text-secondary ">{user.email}</div>
+                                       <br />
+                                       <NavDropdown.Item className='text-danger' onClick={handleLogout}>
+                                          Logout
+                                       </NavDropdown.Item>
+                                    </div>
 
                                  </Nav>
 

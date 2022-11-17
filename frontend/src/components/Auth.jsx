@@ -16,7 +16,7 @@ export default function Auth({ setUser, setIsAuthenticated }) {
       e.preventDefault();
 
       setLoading(true);
-      axios.post('http://localhost:5000/auth/login', {
+      axios.post(process.env.REACT_APP_baseURL + '/auth/login', {
          email,
          password
       }, {})
@@ -41,7 +41,7 @@ export default function Auth({ setUser, setIsAuthenticated }) {
          return;
       }
       setLoading(true);
-      axios.post('http://localhost:5000/auth/register', {
+      axios.post(process.env.REACT_APP_baseURL + '/auth/register', {
          name,
          email,
          password,
