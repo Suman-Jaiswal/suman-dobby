@@ -1,28 +1,69 @@
 import express from 'express';
-import User from '../models/user.model.js';
+import { User, validateLoginUser, validateRegisterUser } from '../models/user.model.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 const router = express.Router();
 
-router.get('/register', (req, res) => {
+router.post('/register', async (req, res) => {
    const doc = { ...req.body }
-   if (doc.name == '' || doc.email == '' || doc.password == '') {
-      res.status(400).json({ message: 'Please fill in all fields' });
+
+   const error = validateRegisterUser(doc);
+
+   if (error) {
+      return res.status(400).json({ msg: "fill all the details!" });
    }
 
-   const user = User.findOne({ email: doc.email });
+   const user = await User.findOne({ email: doc.email });
 
    if (user) {
-      res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ msg: "Email already exists!" });
    }
 
+   else {
+      const salt = await bcrypt.genSalt(10);
+      const hash = await bcrypt.hash(doc.password, salt);
 
+      const newUser = new User({
+         name: doc.name,
+         email: doc.email,
+         hash: hash
+      });
+
+      await newUser.save();
+      res.status(201).json({ msg: "user created!" });
+   }
 
 });
 
-router.get('/login', (req, res) => {
-   res.send('login!');
+router.post('/login', async (req, res) => {
+   const doc = { ...req.body }
+
+   const error = validateLoginUser(doc);
+
+   if (error) {
+      return res.status(400).json({ msg: "Please provide both Email and Passsword!" });
+   }
+
+   const user = await User.findOne({
+      email: doc.email
+   });
+
+   if (!user) {
+      return res.status(400).json({ msg: "User does not exist!" });
+   }
+
+   const isMatch = await bcrypt.compare(doc.password, user.hash);
+
+   if (!isMatch) {
+      return res.status(400).json({ msg: "Invalid credentials!" });
+   }
+
+   const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: 3600 });
+
+   user.hash = undefined;
+
+   res.status(200).json({ msg: "Logged in successfully!", access_token: token, user });
 });
 
 export default router;
